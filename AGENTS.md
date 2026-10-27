@@ -4,9 +4,14 @@
 
 PRoot Apps: desktop applications packaged as single-layer images, installed and run without privileges by the
 `proot-apps` CLI. Imported from `linuxserver/proot-apps` with its history. It is a batch build project, not an
-image repo: there is no `image.yml`, the fleet's shared workflow does not build it, and control, the hub and
-the site do not list it. Its own workflows build about 130 apps, so they are capped to leave the org's 20
-runner slots free for image builds.
+image repo: there is no `image.yml`, the fleet's shared workflow does not build it, and control's fleet does not
+list it. Its own workflows build about 130 apps, so they are capped to leave the org's 20 runner slots free for image
+builds.
+
+The website's PRoot Apps page (`/proot-apps/`) is its catalogue: the hub's hourly refresh reads
+`metadata/metadata.yml` into `/api/v1/proot-apps.json` (`lsio_hub/prootapps.py`), leaving out `disabled` apps, and
+the site shows each app's `full_name`, `category`, `arch`, `description` and `metadata/img/` icon with its
+`proot-apps install <name>` command. Those fields are a contract: rename one and change the hub with it.
 
 Everything is templated on `GITHUB_REPOSITORY`: base and app images go to
 `ghcr.io/linuxserver-playground/proot-apps:<name>`, the README and the release tarball's CLI defaults
