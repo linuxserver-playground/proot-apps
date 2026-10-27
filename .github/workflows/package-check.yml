@@ -22,6 +22,9 @@ permissions:
 jobs:
   meta:
     name: Ingest Metadata
+    # A fork runs the nightly check on its own. Where something else dispatches it with a computed `parallel`
+    # (LinuxServer's control plane), the repository variable SCHEDULED_BY_CONTROL=true turns the cron off.
+    if: github.event_name != 'schedule' || vars.SCHEDULED_BY_CONTROL != 'true'
     runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.set-meta.outputs.matrix }}

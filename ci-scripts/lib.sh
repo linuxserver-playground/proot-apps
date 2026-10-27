@@ -5,8 +5,8 @@
 #   retry_ghcr docker buildx build --push ...
 #   retry 5 10 curl -fsSL ...
 #
-# Vendored from linuxserver-playground/workflows scripts/lib.sh (retry_ghcr and retry, as of a0046b4), which
-# every image build uses. Keep the two in step: fix a bug there first, then copy it here.
+# Vendored from scripts/lib.sh of LinuxServer.io's shared image workflows (the `workflows` repo; retry_ghcr and
+# retry as of a0046b4), which every image build uses. Keep the two in step: fix a bug there first, then copy it here.
 
 # retry_ghcr <command...>: run a registry-touching command, retrying on rate
 # limits with exponential backoff and jitter. Modelled on the Jenkinsfile's
