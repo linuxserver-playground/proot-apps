@@ -23,8 +23,8 @@ RUN \
   mkdir -p \
     /usr/share/icons/hicolor/scalable/apps/ && \
   curl -o \
-    /usr/share/icons/hicolor/scalable/apps/dreamm.svg \
-    https://github.com/linuxserver/proot-apps/raw/master/metadata/img/dreamm.svg && \
+    /usr/share/icons/hicolor/scalable/apps/dreamm.svg -L \
+    "https://github.com/${REPO}/raw/master/metadata/img/dreamm.svg" && \
   DESKTOP_FILE=/usr/share/applications/dreamm-pa.desktop && \
   echo '[Desktop Entry]' > ${DESKTOP_FILE} && \
   echo 'Type=Application' >> ${DESKTOP_FILE} && \

@@ -18,7 +18,7 @@ RUN \
     xz-utils && \
   curl -o \
     /usr/share/icons/hicolor/scalable/apps/ungoogledchromium.svg -L \
-    "https://github.com/linuxserver/proot-apps/raw/master/metadata/img/ungoogledchromium.svg" && \
+    "https://github.com/${REPO}/raw/master/metadata/img/ungoogledchromium.svg" && \
   UGC_VERSION=$(curl -sX GET "https://api.github.com/repos/ungoogled-software/ungoogled-chromium-portablelinux/releases/latest" \
     | jq -r '.tag_name') && \
   cd /tmp && \
