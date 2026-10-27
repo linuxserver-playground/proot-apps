@@ -40,9 +40,11 @@ Capacity rules, which every change here must keep:
 - Every matrix sets `max-parallel` from the `parallel` input (the same name on every workflow that fans out;
   control will dispatch with a computed value). It defaults to 4 for push and schedule, and anything that is not
   a whole number from 1 to 16 falls back to 4. Never add a matrix without it.
-- The build, package-check and README workflows each have one `concurrency` group and never cancels in progress: a newer run waits. GitHub keeps only
-  one pending run per group, so the change detection diffs against the last finished `build changed` run
-  (its title), not the push's `before`; a superseded push is built by the next one.
+- The build, package-check and README workflows each have one `concurrency` group and never cancel in
+  progress: a newer run waits. GitHub keeps only one pending run per group, so the change detection diffs
+  against the last finished `build changed` run (its title), not the push's `before`; a superseded push is
+  built by the next one.
+- Jobs held back by `max-parallel` show as queued, in GitHub and in control's `/api/queue.json`.
 - Every registry pull, push, build or inspect runs under `retry_ghcr`; the nightly check failed only on GHCR
   429s before the cap. Plain downloads retry (`curl --retry`, `retry`).
 - No secrets beyond `GITHUB_TOKEN`; no notifications (control owns them).

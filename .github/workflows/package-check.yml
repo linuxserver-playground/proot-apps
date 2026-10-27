@@ -43,7 +43,8 @@ jobs:
             echo "parallel=4" >> "$GITHUB_OUTPUT"
           fi
           # Disabled apps are not built, so their packages are not checked either
-          echo "matrix=$(yq -o=j -I=0 '{"include": [.include[] | select(.disabled != true)]}' metadata/metadata.yml)" >> "$GITHUB_OUTPUT"
+          # (filtered in jq: yq compares the YAML `True` the file uses as a string, not as the boolean)
+          echo "matrix=$(yq -o=j -I=0 '.include' metadata/metadata.yml | jq -c '{include: [.[] | select(.disabled != true)]}')" >> "$GITHUB_OUTPUT"
   pupdate:
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04
