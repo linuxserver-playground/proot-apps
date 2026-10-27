@@ -3,31 +3,54 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      parallel:
+        description: "Most jobs of this run at once (the org shares 20 runner slots)"
+        type: string
+        default: "4"
+
+# One run at a time; a second one waits rather than doubling the load on the runners and GHCR.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
+  actions: write
+  packages: read
+
 jobs:
   meta:
     name: Ingest Metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.set-meta.outputs.matrix }}
+      parallel: ${{ steps.set-meta.outputs.parallel }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: set-meta
+        env:
+          PARALLEL: ${{ inputs.parallel || '4' }}
         run: |
-          curl -o yq -L "https://github.com/mikefarah/yq/releases/download/v4.43.1/yq_linux_amd64"
-          chmod +x yq
-          echo "matrix=$(./yq -o=j -I=0 '.' metadata/metadata.yml)" >> $GITHUB_OUTPUT
+          # max-parallel: a whole number from 1 to 16, else the default 4
+          if [[ "${PARALLEL}" =~ ^[0-9]+$ ]] && (( PARALLEL >= 1 && PARALLEL <= 16 )); then
+            echo "parallel=${PARALLEL}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::parallel '${PARALLEL}' is not a number from 1 to 16; using 4"
+            echo "parallel=4" >> "$GITHUB_OUTPUT"
+          fi
+          # Disabled apps are not built, so their packages are not checked either
+          echo "matrix=$(yq -o=j -I=0 '{"include": [.include[] | select(.disabled != true)]}' metadata/metadata.yml)" >> "$GITHUB_OUTPUT"
   pupdate:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
     needs: meta
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT }}
-      - run: bash ci-scripts/update-packages.sh ${{ matrix.name }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v5
+      - run: bash ci-scripts/update-packages.sh "${NAME}"
+        env:
+          NAME: ${{ matrix.name }}
+      - uses: actions/upload-artifact@v7
         if: success() || failure()
         with:
           name: ${{ matrix.name }}
@@ -36,22 +59,37 @@ jobs:
           retention-days: 1
     strategy:
       fail-fast: false
+      max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
       matrix: ${{ fromJson(needs.meta.outputs.matrix) }}
   pcommit:
-    runs-on: ubuntu-latest
-    if: success() || failure()
-    needs: pupdate
+    runs-on: ubuntu-24.04
+    if: (success() || failure()) && needs.meta.result == 'success'
+    needs:
+      - meta
+      - pupdate
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
-      - run: rsync -av artifacts/* apps/
       - run: |
+          if [ -d artifacts ]; then
+            rsync -av artifacts/ apps/
+          fi
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PARALLEL: ${{ needs.meta.outputs.parallel }}
+        run: |
+          source ci-scripts/lib.sh
           git config --global user.name 'Package Bot'
           git config --global user.email 'package-bot@users.noreply.github.com'
-          cd apps
-          git add .
-          git diff --quiet HEAD || git commit -m "Bot Updating Package Versions" && git push origin master
+          git add apps
+          if git diff --cached --quiet; then
+            echo "No package changes"
+            exit 0
+          fi
+          git commit -m "Bot Updating Package Versions"
+          # Someone may have pushed meanwhile: rebase onto it and try again
+          retry 5 10 bash -c 'git pull --rebase -q origin master && git push origin HEAD:master'
+          # A push made with GITHUB_TOKEN starts no workflow, so ask for the rebuild of the changed apps here
+          retry 3 10 gh workflow run build-on-commit.yml --ref master -f parallel="${PARALLEL}"

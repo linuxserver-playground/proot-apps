@@ -12,12 +12,15 @@ GH_REPO=$(echo ${GITHUB_REPOSITORY,,} | awk -F'/' '{print $2}')
 PROOT_REPO=selkies-project/proot-next
 PROOT_CHANNEL=${PROOT_CHANNEL:-release}
 
+# Every download retries, so a network flake does not fail the release
+CURL_RETRY=(--retry 5 --retry-delay 5 --retry-all-errors)
+
 # Authenticate API calls when a token is available to avoid rate limits
 gh_api() {
   if [ -n "${GITHUB_TOKEN}" ]; then
-    curl -fsSL -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/${1}"
+    curl -fsSL "${CURL_RETRY[@]}" -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/${1}"
   else
-    curl -fsSL "https://api.github.com/${1}"
+    curl -fsSL "${CURL_RETRY[@]}" "https://api.github.com/${1}"
   fi
 }
 
@@ -56,19 +59,19 @@ for ARCH in amd64 arm64; do
     dist/proot-apps
   JQ_RELEASE=$(gh_api repos/jqlang/jq/releases/latest \
     | awk '/tag_name/ && !f{print $4;f=1}' FS='[""]');
-  curl -fL \
+  curl -fL "${CURL_RETRY[@]}" \
     -o dist/jq \
     https://github.com/jqlang/jq/releases/download/${JQ_RELEASE}/jq-linux-${ARCH}
-  curl -fL \
+  curl -fL "${CURL_RETRY[@]}" \
     -o dist/ncat \
     https://github.com/${GH_USER}/${GH_REPO}/raw/bins/ncat/ncat-${ARCH}
 
   # Ingest proot and verify it against the published checksum
   mkdir -p proot
-  curl -fL \
+  curl -fL "${CURL_RETRY[@]}" \
     -o proot/proot-${UNAME_ARCH} \
     ${PROOT_URL}/proot-${UNAME_ARCH}
-  curl -fL \
+  curl -fL "${CURL_RETRY[@]}" \
     -o proot/proot-${UNAME_ARCH}.sha256 \
     ${PROOT_URL}/proot-${UNAME_ARCH}.sha256
   (cd proot && sha256sum -c proot-${UNAME_ARCH}.sha256)

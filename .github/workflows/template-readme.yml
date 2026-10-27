@@ -4,14 +4,20 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+
+# One at a time, so two runs never race to push the same README
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
 jobs:
   rupdate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: cuchi/jinja2-action@v1.3.0
         with:
           template: ci-scripts/README.template
@@ -19,7 +25,12 @@ jobs:
           data_file: metadata/metadata.yml
           data_format: yaml
       - run: |
+          source ci-scripts/lib.sh
           git config --global user.name 'README Bot'
           git config --global user.email 'readme-bot@users.noreply.github.com'
           git add README.md
-          git diff --quiet HEAD || git commit -m "Bot Updating README" && git push origin master
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Bot Updating README"
+          retry 5 10 bash -c 'git pull --rebase -q origin master && git push origin HEAD:master'

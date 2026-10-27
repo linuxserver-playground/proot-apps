@@ -11,30 +11,31 @@ permissions:
 jobs:
   prerelease:
     name: Publish Prerelease
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Package and README bot commits are not releases
     if: >-
       github.event.head_commit.author.name != 'Package Bot' &&
       github.event.head_commit.author.name != 'README Bot' &&
       !startsWith(github.event.head_commit.message, 'Bot Updating')
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     # Prereleases ship the proot-next build of the latest commit to its main branch
     - id: build
       run: bash ci-scripts/create-releases.sh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PROOT_CHANNEL: prerelease
-    - uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: proot-apps-*
-        tag: prerelease-${{ github.sha }}
-        release_name: Prerelease ${{ github.sha }}
-        body: |
-          ${{ github.event.head_commit.message }}
-
-          proot-next: https://github.com/selkies-project/proot-next/releases/tag/${{ steps.build.outputs.proot_tag }}
-        prerelease: true
-        overwrite: true
-        file_glob: true
+    - env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: prerelease-${{ github.sha }}
+        MESSAGE: ${{ github.event.head_commit.message }}
+        PROOT_TAG: ${{ steps.build.outputs.proot_tag }}
+      run: |
+        source ci-scripts/lib.sh
+        printf '%s\n\nproot-next: https://github.com/selkies-project/proot-next/releases/tag/%s\n' "${MESSAGE}" "${PROOT_TAG}" > notes.md
+        if gh release view "${TAG}" > /dev/null 2>&1; then
+          retry 3 10 gh release upload "${TAG}" proot-apps-* --clobber
+        else
+          retry 3 10 gh release create "${TAG}" proot-apps-* --target "${GITHUB_SHA}" \
+            --title "Prerelease ${GITHUB_SHA}" --notes-file notes.md --prerelease
+        fi

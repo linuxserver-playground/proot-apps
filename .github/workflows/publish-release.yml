@@ -5,32 +5,29 @@ on:
       - '*'
       - '!prerelease-*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Publish Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     # Releases ship the latest stable proot-next release, built before the release is created so a failed ingest publishes nothing
     - run: bash ci-scripts/create-releases.sh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PROOT_CHANNEL: release
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body_path: release-notes/current
-        draft: false
-        prerelease: false
-    - uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: proot-apps-*
-        tag: ${{ github.ref }}
-        overwrite: true
-        file_glob: true
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: ${{ github.ref_name }}
+      run: |
+        source ci-scripts/lib.sh
+        if gh release view "${TAG}" > /dev/null 2>&1; then
+          retry 3 10 gh release upload "${TAG}" proot-apps-* --clobber
+        else
+          retry 3 10 gh release create "${TAG}" proot-apps-* --verify-tag \
+            --title "Release ${TAG}" --notes-file release-notes/current
+        fi
