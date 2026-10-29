@@ -59,7 +59,7 @@ Capacity rules, which every change here must keep:
   (`${REPO}` in Dockerfiles, `REPLACE_USER`/`REPLACE_REPO` in the CLI), never a literal org. A fresh fork needs
   nothing but Actions enabled and its `proot-apps` package made public.
 - The repository variable `SCHEDULED_BY_CONTROL=true` turns off the package check's cron, for when control
-  dispatches it with a computed `parallel`. It is not set yet: control does not dispatch it, so the cron runs.
+  dispatches it with a computed `parallel`. It is set here: control dispatches the check at 00:00 UTC.
 
 ## How to validate
 
