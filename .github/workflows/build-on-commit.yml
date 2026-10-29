@@ -28,7 +28,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   actions: read
 
@@ -80,7 +80,9 @@ jobs:
               since=$(git rev-parse HEAD~1)
             fi
             echo "Changes since ${since}"
-            names=$(git diff --name-only "${since}" HEAD -- apps/ | cut -d/ -f2 | sort -u | jq -R . | jq -cs .)
+            # package_versions.txt is written by the builds themselves (Package Bot), never a reason to build
+            names=$(git diff --name-only "${since}" HEAD -- apps/ ':(exclude)apps/*/package_versions.txt' \
+              | cut -d/ -f2 | sort -u | jq -R . | jq -cs .)
             # shellcheck disable=SC2016 # $names is a jq variable
             filter='[.[] | select(.name | IN($names[]))]'
             if [[ -n "$(git diff --name-only "${since}" HEAD -- base-images/)" ]]; then
@@ -111,16 +113,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - env:
+      - run: bash ci-scripts/build-base.sh "${NAME}"
+        env:
           NAME: ${{ matrix.name }}
-        run: |
-          source ci-scripts/lib.sh
-          cd base-images
-          retry_ghcr docker buildx build --push \
-            --file "Dockerfile.${NAME}" \
-            --platform linux/amd64,linux/arm64 \
-            --build-arg "REPO=${GITHUB_REPOSITORY,,}" \
-            --tag "ghcr.io/${GITHUB_REPOSITORY,,}:${NAME}" .
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
@@ -149,17 +144,31 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - env:
+      # Build, scan and push in one pass; the package list it records is committed below, with no second run.
+      - run: bash ci-scripts/build-app.sh "${NAME}" "${PLATFORMS}" push
+        env:
           NAME: ${{ matrix.name }}
           PLATFORMS: ${{ matrix.arch }}
-        run: |
-          source ci-scripts/lib.sh
-          cd "apps/${NAME}/"
-          retry_ghcr docker buildx build --push \
-            --platform "${PLATFORMS}" \
-            --build-arg "REPO=${GITHUB_REPOSITORY,,}" \
-            --tag "ghcr.io/${GITHUB_REPOSITORY,,}:${NAME}" .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}
+          if-no-files-found: ignore
+          path: apps/${{ matrix.name }}/package_versions.txt
+          retention-days: 1
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
       matrix: ${{ fromJson(needs.meta.outputs.matrix) }}
+  pcommit:
+    name: Commit package versions
+    runs-on: ubuntu-24.04
+    if: ${{ !cancelled() && needs.meta.result == 'success' && needs.meta.outputs.count != '0' }}
+    needs:
+      - meta
+      - build
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+      - run: bash ci-scripts/commit-packages.sh

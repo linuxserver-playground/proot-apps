@@ -16,8 +16,7 @@ concurrency:
 
 permissions:
   contents: write
-  actions: write
-  packages: read
+  packages: write
 
 jobs:
   meta:
@@ -45,17 +44,57 @@ jobs:
           # Disabled apps are not built, so their packages are not checked either
           # (filtered in jq: yq compares the YAML `True` the file uses as a string, not as the boolean)
           echo "matrix=$(yq -o=j -I=0 '.include' metadata/metadata.yml | jq -c '{include: [.[] | select(.disabled != true)]}')" >> "$GITHUB_OUTPUT"
-  pupdate:
+  # Apps build FROM the base tags, so refresh those first: the check then sees the packages users would get.
+  base:
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04
     needs: meta
     steps:
       - uses: actions/checkout@v5
-      - run: bash ci-scripts/update-packages.sh "${NAME}"
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: bash ci-scripts/build-base.sh "${NAME}"
         env:
           NAME: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
+      matrix:
+        include:
+          - name: alpine-323
+          - name: alpine-324
+          - name: alpine-edge
+          - name: debian-trixie
+          - name: ubuntu-jammy
+          - name: ubuntu-noble
+          - name: ubuntu-resolute
+  # One pass per app: build and scan amd64, and only when its packages changed, push every arch. No second run.
+  pupdate:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    needs:
+      - meta
+      - base
+    if: always() && needs.meta.result == 'success' && needs.base.result != 'cancelled'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: bash ci-scripts/build-app.sh "${NAME}" "${PLATFORMS}" check
+        env:
+          NAME: ${{ matrix.name }}
+          PLATFORMS: ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
-        if: success() || failure()
         with:
           name: ${{ matrix.name }}
           if-no-files-found: ignore
@@ -66,8 +105,9 @@ jobs:
       max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
       matrix: ${{ fromJson(needs.meta.outputs.matrix) }}
   pcommit:
+    name: Commit package versions
     runs-on: ubuntu-24.04
-    if: (success() || failure()) && needs.meta.result == 'success'
+    if: ${{ !cancelled() && needs.meta.result == 'success' }}
     needs:
       - meta
       - pupdate
@@ -76,24 +116,4 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
-      - run: |
-          if [ -d artifacts ]; then
-            rsync -av artifacts/ apps/
-          fi
-      - env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PARALLEL: ${{ needs.meta.outputs.parallel }}
-        run: |
-          source ci-scripts/lib.sh
-          git config --global user.name 'Package Bot'
-          git config --global user.email 'package-bot@users.noreply.github.com'
-          git add apps
-          if git diff --cached --quiet; then
-            echo "No package changes"
-            exit 0
-          fi
-          git commit -m "Bot Updating Package Versions"
-          # Someone may have pushed meanwhile: rebase onto it and try again
-          retry 5 10 bash -c 'git pull --rebase -q origin master && git push origin HEAD:master'
-          # A push made with GITHUB_TOKEN starts no workflow, so ask for the rebuild of the changed apps here
-          retry 3 10 gh workflow run build-on-commit.yml --ref master -f parallel="${PARALLEL}"
+      - run: bash ci-scripts/commit-packages.sh
