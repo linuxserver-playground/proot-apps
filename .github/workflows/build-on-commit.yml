@@ -40,6 +40,7 @@ jobs:
       matrix: ${{ steps.set-meta.outputs.matrix }}
       count: ${{ steps.set-meta.outputs.count }}
       base: ${{ steps.set-meta.outputs.base }}
+      bases: ${{ steps.set-meta.outputs.bases }}
       parallel: ${{ steps.set-meta.outputs.parallel }}
     steps:
       - uses: actions/checkout@v5
@@ -61,10 +62,12 @@ jobs:
             echo "::warning::parallel '${PARALLEL}' is not a number from 1 to 16; using 4"
             echo "parallel=4" >> "$GITHUB_OUTPUT"
           fi
-          base=false
+          # The base images this workflow builds; the daily package check refreshes the same set every night
+          all_bases='["alpine-323","alpine-324","alpine-edge","debian-trixie","ubuntu-jammy","ubuntu-noble","ubuntu-resolute"]'
+          bases='[]'
           if [[ "${BUILD_ALL}" == "true" ]]; then
             filter='[.[] | select(.disabled != true)]'
-            base=true
+            bases="${all_bases}"
           elif [[ -n "${APPS}" ]]; then
             names=$(jq -cn --arg a "${APPS}" '$a | split(" ") | map(select(. != ""))')
             # shellcheck disable=SC2016 # $names is a jq variable
@@ -85,19 +88,31 @@ jobs:
               | cut -d/ -f2 | sort -u | jq -R . | jq -cs .)
             # shellcheck disable=SC2016 # $names is a jq variable
             filter='[.[] | select(.name | IN($names[]))]'
-            if [[ -n "$(git diff --name-only "${since}" HEAD -- base-images/)" ]]; then
-              base=true
+            # A changed base Dockerfile rebuilds that base; any other change under base-images/ rebuilds them all
+            changed=$(git diff --name-only "${since}" HEAD -- base-images/)
+            if [[ -n "${changed}" ]] && grep -qv '^base-images/Dockerfile\.' <<< "${changed}"; then
+              bases="${all_bases}"
+            elif [[ -n "${changed}" ]]; then
+              bases=$(jq -R . <<< "${changed//base-images\/Dockerfile./}" | jq -cs .)
             fi
           fi
           matrix=$(yq -o=j -I=0 '.include' metadata/metadata.yml | jq -c --argjson names "${names:-[]}" "${filter}")
           count=$(jq length <<< "${matrix}")
-          # Apps build FROM the base tags, so refresh those first whenever an app builds
-          (( count > 0 )) && base=true
-          echo "Building ${count} apps (base images: ${base}): $(jq -r 'map(.name) | join(" ")' <<< "${matrix}")"
+          # Apps build FROM the base tags, so refresh the ones the apps being built use (their FROM lines) first
+          for app in $(jq -r '.[].name' <<< "${matrix}"); do
+            # shellcheck disable=SC2016 # ${REPO} is the Dockerfile's own ARG, matched literally
+            used=$(sed -n 's|^FROM ghcr.io/${REPO}:\([a-z0-9-]*\).*|\1|p' "apps/${app}/Dockerfile" | jq -R . | jq -cs .)
+            bases=$(jq -cn --argjson a "${bases}" --argjson b "${used}" '$a + $b | unique')
+          done
+          bases=$(jq -cn --argjson a "${bases}" --argjson all "${all_bases}" '[$a[] | select(IN($all[]))]')
+          base=$([[ "${bases}" == "[]" ]] && echo false || echo true)
+          echo "Building ${count} apps: $(jq -r 'map(.name) | join(" ")' <<< "${matrix}")"
+          echo "Base images: $(jq -r 'join(" ")' <<< "${bases}")"
           {
             echo "matrix={\"include\":${matrix}}"
             echo "count=${count}"
             echo "base=${base}"
+            echo "bases=${bases}"
           } >> "$GITHUB_OUTPUT"
   base:
     name: ${{ matrix.name }}
@@ -120,14 +135,7 @@ jobs:
       fail-fast: false
       max-parallel: ${{ fromJSON(needs.meta.outputs.parallel) }}
       matrix:
-        include:
-          - name: alpine-323
-          - name: alpine-324
-          - name: alpine-edge
-          - name: debian-trixie
-          - name: ubuntu-jammy
-          - name: ubuntu-noble
-          - name: ubuntu-resolute
+        name: ${{ fromJson(needs.meta.outputs.bases) }}
   build:
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04

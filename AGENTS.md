@@ -36,7 +36,7 @@ hard-coded org is a bug.
 
 | Workflow | Trigger | What |
 | --- | --- | --- |
-| `build-on-commit.yml` | push to `master`, dispatch | Rebuilds the base images, then builds, scans and pushes the apps that changed since the last finished `build changed` run (`package_versions.txt` changes never count), then commits their package lists. Dispatch inputs: `build_all`, `apps` (space-separated names), `parallel`. |
+| `build-on-commit.yml` | push to `master`, dispatch | Rebuilds only the base images its apps build `FROM` (all of them for `build_all` or a change under `base-images/` other than one `Dockerfile.<name>`), then builds, scans and pushes the apps that changed since the last finished `build changed` run (`package_versions.txt` changes never count), then commits their package lists. Dispatch inputs: `build_all`, `apps` (space-separated names), `parallel`. |
 | `package-check.yml` | daily 00:00 UTC, dispatch | Rebuilds the base images, then one job per enabled app that builds and scans it and publishes it only when its packages changed, then `pcommit` commits the changed lists. Nothing is built twice and no second run is dispatched. Input: `parallel`. |
 | `prerelease-on-commit.yml` | push to `master` (not bot commits) | Release tarballs as the prerelease `prerelease-<sha>`. |
 | `publish-release.yml` | a tag other than `prerelease-*` | Release tarballs as a release, notes from `release-notes/current`. |
