@@ -19,11 +19,30 @@ REPO="${GITHUB_REPOSITORY,,}"
 # shellcheck source=ci-scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
 
-# What a failed upstream download looks like in the build output. Most Dockerfiles ask api.github.com for the
-# latest release without a token, and a runner over GitHub's unauthenticated limit gets no tag_name back: the
-# asset URL then names release "null", GitHub answers 404 with the 9 bytes "Not Found", and the build fails on
-# that body as a .deb (apt) or as an AppImage run by sh. The curl codes are connection, TLS and transfer errors.
-UPSTREAM_FLAKE='Could not read meta data from /tmp/|: 1: Not: not found|curl: \((5|6|7|16|18|28|35|52|55|56|92)\)'
+# What a failed upstream download looks like in the build output. The Dockerfiles use plain `curl -L`, so an
+# error page is saved as if it were the asset, and the build fails later, where a tool opens that body. Two bodies
+# come back: the 9 bytes "Not Found" (most Dockerfiles ask api.github.com for the latest release without a token,
+# a runner over GitHub's unauthenticated limit gets no tag_name back, and the asset URL then names release "null"),
+# and GitHub's HTML error page (a 429 or 5xx on the download itself). So the patterns are each extractor's
+# complaint about a file that is not what it was named, in GNU and busybox wording, plus curl's own connection,
+# TLS, transfer and (with --fail) HTTP errors. An asset upstream really renamed matches too: it is built once
+# more and then fails, never a third time.
+UPSTREAM_FLAKE_PATTERNS=(
+  'curl: \((5|6|7|16|18|22|28|35|52|55|56|92)\)'
+  'Could not read meta data from /tmp/'                  # apt install ./x.deb
+  'is not a Debian format archive'                       # dpkg on an HTML page
+  'unexpected end of file in archive magic'              # dpkg on "Not Found"
+  'This does not look like a tar archive'                # GNU tar
+  'invalid tar magic'                                    # busybox tar
+  'xz: \(stdin\): File format not recognized'
+  'gzip: stdin: not in gzip format'
+  'End-of-central-directory signature not found'        # Info-ZIP unzip
+  'unzip: short read'                                    # busybox unzip
+  '1: Not: not found'                                    # "Not Found" run as an AppImage (dash and ash)
+  'cannot open !DOCTYPE'                                 # GitHub's error page (CRLF) run as an AppImage
+  'Syntax error: newline unexpected|syntax error: unexpected newline'   # an LF HTML page run as one
+)
+UPSTREAM_FLAKE=$(IFS='|'; echo "${UPSTREAM_FLAKE_PATTERNS[*]}")
 # The longest wait for the runner's API limit to reset before the one retry; past it the retry is not made.
 UPSTREAM_MAX_WAIT=600
 
