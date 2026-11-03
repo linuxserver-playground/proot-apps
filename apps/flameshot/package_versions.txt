@@ -80,7 +80,7 @@ libdrm                          2.4.134-r0               apk
 libeconf                        0.8.4-r0                 apk     
 libelf                          0.195-r0                 apk     
 libevdev                        1.13.6-r0                apk     
-libexpat                        2.9.0-r0                 apk     
+libexpat                        2.10.0-r0                apk     
 libffi                          3.8.0-r0                 apk     
 libflac                         1.5.0-r0                 apk     
 libgcc                          15.2.0-r9                apk     
@@ -194,7 +194,7 @@ sqlite-libs                     3.54.1-r0                apk
 ssl_client                      1.38.0-r4                apk     
 tdb-libs                        1.4.15-r1                apk     
 tslib                           1.24-r0                  apk     
-tzdata                          2026e-r0                 apk     
+tzdata                          2026f-r0                 apk     
 wayland-libs-client             1.26.0-r0                apk     
 wayland-libs-cursor             1.26.0-r0                apk     
 wayland-libs-egl                1.26.0-r0                apk     
