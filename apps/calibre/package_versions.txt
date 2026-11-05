@@ -273,7 +273,7 @@ libyuv                          0.0.1928-r0              apk
 libzmq                          4.3.5-r2                 apk                         
 linux-headers                   7.2.1-r0                 apk                         
 linux-raw-sys                   0.9.4                    rust-crate                  
-llvm23-libs                     23.1.4-r0                apk                         
+llvm23-libs                     23.1.5-r0                apk                         
 log                             0.4.27                   rust-crate                  
 lxml                            6.1.1                    python                      
 make                            4.4.1-r4                 apk                         
