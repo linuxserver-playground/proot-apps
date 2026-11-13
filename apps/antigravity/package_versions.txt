@@ -344,7 +344,7 @@ gnupg                                              2.4.7-21+deb13u1             
 gnupg-l10n                                         2.4.7-21+deb13u1                      deb                    
 gnupg2                                             2.4.7-21+deb13u1                      deb                    
 go                                                 1.0.0                                 npm                    
-google-antigravity                                 0.0.1                                 npm                    
+google-antigravity                                 1.11.0                                npm                    
 google-auth-library                                10.3.0                                npm                    
 google-logging-utils                               1.1.1                                 npm                    
 gpg                                                2.4.7-21+deb13u1+b5                   deb                    
