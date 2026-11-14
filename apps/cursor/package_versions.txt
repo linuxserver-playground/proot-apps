@@ -146,7 +146,7 @@ NAME                                         VERSION                            
 @xterm/addon-webgl                           0.20.0-beta.300                       npm                         
 @xterm/headless                              6.1.0-beta.303                        npm                         
 @xterm/xterm                                 6.1.0-beta.304                        npm                         
-Cursor                                       3.30.8                                npm                         
+Cursor                                       3.30.14                               npm                         
 abort-controller                             3.0.0                                 npm                         
 accepts                                      2.0.0                                 npm                         
 acorn                                        8.18.0                                npm                         
@@ -772,7 +772,7 @@ libzstd1                                     1.5.7+dfsg-1                       
 libzvbi-common                               0.2.44-1                              deb                         
 libzvbi0t64                                  0.2.44-1                              deb                         
 linkify-it                                   3.0.3                                 npm                         
-linux-libc-dev                               6.12.116-1                            deb                         
+linux-libc-dev                               6.12.117-1                            deb                         
 locales-all                                  2.41-12+deb13u4                       deb                         
 lodash                                       4.18.1                                npm                         
 lodash.includes                              4.3.0                                 npm                         

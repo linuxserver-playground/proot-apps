@@ -324,7 +324,7 @@ libpng16-16t64                       1.6.48-1+deb13u6                      deb
 libpocketsphinx3                     0.8+5prealpha+1-15+b4                 deb     
 libpoppler147                        25.03.0-5+deb13u4                     deb     
 libpostproc58                        7:7.1.5-0+deb13u1                     deb     
-libpq5                               17.11-0+deb13u1                       deb     
+libpq5                               17.12-0+deb13u1                       deb     
 libproc2-0                           2:4.0.4-9                             deb     
 libproj25                            9.6.0-1                               deb     
 libprotobuf32t64                     3.21.12-11+deb13u1                    deb     
@@ -534,7 +534,7 @@ libzmq5                              4.3.5-1+b3                            deb
 libzstd1                             1.5.7+dfsg-1                          deb     
 libzvbi-common                       0.2.44-1                              deb     
 libzvbi0t64                          0.2.44-1                              deb     
-linux-libc-dev                       6.12.116-1                            deb     
+linux-libc-dev                       6.12.117-1                            deb     
 locales-all                          2.41-12+deb13u4                       deb     
 login                                1:4.16.0-2+really2.41.5-0+deb13u1     deb     
 login.defs                           1:4.17.4-2                            deb     
