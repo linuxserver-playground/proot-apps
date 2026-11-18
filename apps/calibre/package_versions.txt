@@ -331,7 +331,7 @@ lxml                                      6.1.1                    python
 make                                      4.4.1-r4                 apk                         
 markdown                                  3.11.3                   python                      
 maybe-rayon                               0.1.1                    rust-crate                  
-mbedtls3                                  3.6.7-r0                 apk                         
+mbedtls3                                  3.6.8-r0                 apk                         
 mechanize                                 0.4.10                   python                      
 memchr                                    2.7.5                    rust-crate                  
 mesa                                      26.3.0-r0                apk                         
@@ -457,7 +457,7 @@ py3-pycryptodome                          3.24.1-r0                apk
 py3-pycryptodome-pyc                      3.24.1-r0                apk                         
 py3-pygments                              2.21.0-r0                apk                         
 py3-pygments-pyc                          2.21.0-r0                apk                         
-py3-pyqt6-sip                             13.13.0-r0               apk                         
+py3-pyqt6-sip                             13.13.1-r0               apk                         
 py3-pyqt6-webengine                       6.11.0-r0                apk                         
 py3-qt6                                   6.12.0-r0                apk                         
 py3-qt6-pyc                               6.12.0-r0                apk                         
@@ -489,7 +489,7 @@ pyc                                       3.14.10-r1               apk
 pycryptodome                              3.24.1                   python                      
 pygments                                  2.21.0                   python                      
 pyqt6                                     6.12.0                   python                      
-pyqt6-sip                                 13.13.0                  python                      
+pyqt6-sip                                 13.13.1                  python                      
 pyqt6-webengine                           6.11.0                   python                      
 python-dateutil                           2.9.0                    python                      
 python3                                   3.14.10-r1               apk                         
