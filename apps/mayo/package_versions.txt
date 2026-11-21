@@ -455,7 +455,7 @@ ocl-icd-libopencl1                  2.3.2-1build1                       deb
 openssl                             3.0.13-0ubuntu3.16                  deb                     
 packagekit                          1.2.8-2ubuntu1.5                    deb                     
 passwd                              1:4.13+dfsg1-4ubuntu3.2             deb                     
-perl-base                           5.38.2-3.2ubuntu0.6                 deb                     
+perl-base                           5.38.2-3.2ubuntu0.7                 deb                     
 polkitd                             124-2ubuntu1.24.04.4                deb                     
 procps                              2:4.0.4-4ubuntu3.3                  deb                     
 pulseaudio                          1:16.1+dfsg1-2ubuntu10.1            deb                     
@@ -474,7 +474,7 @@ python3-dbus                        1.3.2-5build3                       deb
 python3-distro                      1.9.0-1                             deb                     
 python3-gi                          3.48.2-1                            deb                     
 python3-httplib2                    0.20.4-3ubuntu0.1                   deb                     
-python3-jwt                         2.7.0-1ubuntu0.4                    deb                     
+python3-jwt                         2.7.0-1ubuntu0.5                    deb                     
 python3-launchpadlib                1.11.0-6                            deb                     
 python3-lazr.restfulclient          0.14.6-1                            deb                     
 python3-lazr.uri                    1.0.6-3                             deb                     
