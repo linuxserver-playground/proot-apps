@@ -38,8 +38,8 @@ fontconfig                      2.18.4-r0                apk
 freetype                        2.14.3-r0                apk     
 fribidi                         1.0.18-r0                apk     
 gcc                             15.2.0-r9                apk     
-glib                            2.90.0-r0                apk     
-glib-lang                       2.90.0-r0                apk     
+glib                            2.90.1-r0                apk     
+glib-lang                       2.90.1-r0                apk     
 gmp                             6.3.0-r4                 apk     
 gnutls                          3.8.14-r0                apk     
 graphene                        1.10.8-r6                apk     
