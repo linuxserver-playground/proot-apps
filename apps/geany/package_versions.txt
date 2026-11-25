@@ -187,7 +187,7 @@ pulseaudio-alsa                 17.0-r7                  apk
 pulseaudio-lang                 17.0-r7                  apk     
 pyc                             3.14.10-r2               apk     
 python3                         3.14.10-r2               apk     
-python3-ndbm                    3.14.10-r2               apk     
+python3-ndbm                    3.14.10-r3               apk     
 python3-pyc                     3.14.10-r2               apk     
 python3-pycache-pyc0            3.14.10-r2               apk     
 readline                        8.3.3-r1                 apk     
@@ -215,4 +215,4 @@ xprop                           1.2.8-r0                 apk
 xset                            1.2.5-r1                 apk     
 xz-libs                         5.8.4-r0                 apk     
 zlib                            1.4-r0                   apk     
-zstd-libs                       1.5.7-r2                 apk     
+zstd-libs                       1.6.0-r1                 apk     

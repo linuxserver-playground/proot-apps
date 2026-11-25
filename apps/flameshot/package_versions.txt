@@ -103,7 +103,7 @@ libpcre2-16                     10.49-r0                 apk
 libpng                          1.6.59-r0                apk     
 libproxy                        0.5.12-r0                apk     
 libpsl                          0.21.5-r3                apk     
-libpulse                        17.0-r9                  apk     
+libpulse                        17.0-r10                 apk     
 libsm                           1.2.6-r0                 apk     
 libsndfile                      1.2.2-r3                 apk     
 libssl3                         3.5.7-r0                 apk     
@@ -173,9 +173,9 @@ pango                           1.58.2-r0                apk
 pcre2                           10.49-r0                 apk     
 pixman                          0.46.4-r0                apk     
 pkgconf                         3.0.11-r0                apk     
-pulseaudio                      17.0-r9                  apk     
-pulseaudio-alsa                 17.0-r9                  apk     
-pulseaudio-lang                 17.0-r9                  apk     
+pulseaudio                      17.0-r10                 apk     
+pulseaudio-alsa                 17.0-r10                 apk     
+pulseaudio-lang                 17.0-r10                 apk     
 pyc                             3.14.10-r1               apk     
 python3                         3.14.10-r1               apk     
 python3-pyc                     3.14.10-r1               apk     
@@ -215,4 +215,4 @@ xprop                           1.2.8-r0                 apk
 xset                            1.2.5-r1                 apk     
 xz-libs                         5.8.4-r0                 apk     
 zlib                            1.4-r0                   apk     
-zstd-libs                       1.5.7-r2                 apk     
+zstd-libs                       1.6.0-r1                 apk     

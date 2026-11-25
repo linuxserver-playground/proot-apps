@@ -366,7 +366,7 @@ pyopenssl                        26.1.0                   python
 pyparsing                        3.3.2                    python        
 pyserial                         3.5                      python        
 python3                          3.14.10-r2               apk           
-python3-ndbm                     3.14.10-r2               apk           
+python3-ndbm                     3.14.10-r3               apk           
 python3-pyc                      3.14.10-r2               apk           
 python3-pycache-pyc0             3.14.10-r2               apk           
 pyxdg                            0.28                     python        
@@ -433,4 +433,4 @@ yaml                             0.2.5-r2                 apk
 zipp                             3.23.0                   python        
 zlib                             1.4-r0                   apk           
 zope-interface                   7.2                      python        
-zstd-libs                        1.5.7-r2                 apk           
+zstd-libs                        1.6.0-r1                 apk           

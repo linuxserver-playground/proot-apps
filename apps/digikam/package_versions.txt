@@ -437,7 +437,7 @@ pulseaudio-alsa                 17.0-r7                  apk
 pulseaudio-lang                 17.0-r7                  apk                         
 pyc                             3.14.10-r2               apk                         
 python3                         3.14.10-r2               apk                         
-python3-ndbm                    3.14.10-r2               apk                         
+python3-ndbm                    3.14.10-r3               apk                         
 python3-pyc                     3.14.10-r2               apk                         
 python3-pycache-pyc0            3.14.10-r2               apk                         
 qt6-qt5compat                   6.11.1-r0                apk                         
@@ -536,4 +536,4 @@ zerocopy                        0.8.25                   rust-crate
 zimg                            3.0.6-r0                 apk                         
 zix-libs                        0.8.0-r0                 apk                         
 zlib                            1.4-r0                   apk                         
-zstd-libs                       1.5.7-r2                 apk                         
+zstd-libs                       1.6.0-r1                 apk                         
