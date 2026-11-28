@@ -146,7 +146,7 @@ libdrm                          2.4.131-r0               apk
 libeconf                        0.8.3-r0                 apk                         
 libelf                          0.194-r0                 apk                         
 libexpat                        2.11.0-r0                apk                         
-libffi                          3.8.1-r0                 apk                         
+libffi                          3.8.2-r0                 apk                         
 libflac                         1.4.3-r2                 apk                         
 libgcc                          15.2.0-r2                apk                         
 libgomp                         15.2.0-r2                apk                         
@@ -207,7 +207,7 @@ libxfixes                       6.0.2-r0                 apk
 libxft                          2.3.9-r0                 apk                         
 libxi                           1.8.2-r0                 apk                         
 libxinerama                     1.1.5-r4                 apk                         
-libxml2                         2.13.9-r1                apk                         
+libxml2                         2.13.9-r2                apk                         
 libxmu                          1.2.1-r0                 apk                         
 libxrandr                       1.5.4-r1                 apk                         
 libxrender                      0.9.12-r0                apk                         
